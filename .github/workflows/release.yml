@@ -24,4 +24,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
-        run: gh release create "$RELEASE_TAG" release/main.js release/manifest.json release/obsidian-mcp-cli.mjs release/install.sh release/install.ps1 release/SHA256SUMS --verify-tag --generate-notes
+        run: |
+          notes="docs/release-notes/v${RELEASE_TAG#v}.md"
+          if [ -f "$notes" ]; then
+            gh release create "$RELEASE_TAG" release/main.js release/manifest.json release/obsidian-mcp-cli.mjs release/install.sh release/install.ps1 release/SHA256SUMS --verify-tag --notes-file "$notes"
+          else
+            gh release create "$RELEASE_TAG" release/main.js release/manifest.json release/obsidian-mcp-cli.mjs release/install.sh release/install.ps1 release/SHA256SUMS --verify-tag --generate-notes
+          fi

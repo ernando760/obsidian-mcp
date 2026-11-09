@@ -1,7 +1,7 @@
 # Preparação da primeira release
 
-**Estado: CI multiplataforma aprovado; publicação pendente de validação manual e análise de dependências.** A versão do projeto permanece `0.1.0`.
-Nenhuma release ou tag foi publicada durante esta preparação.
+**Estado: CI multiplataforma e auditoria de dependências aprovados; publicação da v0.1.0 autorizada.** A versão do projeto permanece `0.1.0`.
+Os testes manuais dos aplicativos Obsidian e Codex em macOS e Windows permanecem pendentes.
 
 ## Origem oficial
 
@@ -125,12 +125,10 @@ aprovada acima inclui as dependências atualizadas.
 
 ## Impedimentos atuais
 
-Realizar smoke test nos aplicativos reais. Os testes de vault e protocolo não
-substituem o carregamento pelo Obsidian/Electron e o uso pelo Codex Desktop.
-Após uma publicação autorizada, verificar os artefatos distribuídos.
-
-Não considerar a primeira release aprovada antes do smoke test. Não criar
-uma tag de release como forma de testar o CI: use o workflow **Test**.
+O teste funcional registrado abaixo foi realizado em uma instalação real.
+Ainda são necessários testes manuais nos aplicativos Obsidian e Codex em macOS
+e Windows; o CI nesses sistemas não substitui essa verificação. Após a publicação,
+verificar os artefatos distribuídos e seus checksums.
 
 ## Commits
 
@@ -164,3 +162,17 @@ somente quando o commit inicial continuar idêntico ao snapshot aprovado.
 A criação do remoto e o push inicial foram confirmados no GitHub. O procedimento
 publicou apenas o código-fonte. As correções posteriores devem usar commits
 normais; não execute novamente o inicializador após acrescentar histórico.
+
+## Teste final do Obsidian MCP
+
+Execução validada em 2026-11-09 usando somente a pasta autorizada `MCP/Projetos`:
+
+| Ferramenta | Resultado |
+| --- | --- |
+| `list_notes` | Aprovado; listou as duas notas disponíveis antes do teste. |
+| `create_folder` | Aprovado; criou `MCP/Projetos/testes-finais`. |
+| `create_note` | Aprovado; criou `MCP/Projetos/testes-finais/validacao-final.md` com `Validação final das ferramentas Obsidian MCP.` |
+| `read_note` | Aprovado; retornou o conteúdo exato criado. |
+| `search_notes` | Aprovado; encontrou a nota pelo conteúdo exato. |
+
+Nenhuma anotação existente foi modificada.
