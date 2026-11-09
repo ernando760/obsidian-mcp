@@ -1,0 +1,50 @@
+{
+  "name": "obsidian-mcp",
+  "version": "0.1.0",
+  "description": "Local authenticated MCP access to authorized Obsidian Markdown notes",
+  "main": "main.js",
+  "type": "module",
+  "private": true,
+  "license": "0BSD",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc --noEmit && node esbuild.config.mjs production && node scripts/build-cli.mjs",
+    "test": "vitest run",
+    "build:cli": "tsc --noEmit && node scripts/build-cli.mjs",
+    "cli": "node dist/obsidian-mcp-cli.mjs",
+    "release:prepare": "npm run build && node scripts/release.mjs",
+    "release:check": "node scripts/check-release.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "smol-toml": "1.5.2",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.17",
+    "esbuild": "0.27.5",
+    "obsidian": "1.12.3",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
+  },
+  "bin": {
+    "obsidian-mcp": "dist/obsidian-mcp-cli.mjs"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "files": [
+    "dist/obsidian-mcp-cli.mjs",
+    "main.js",
+    "manifest.json",
+    "versions.json",
+    "README.md",
+    "LICENSE",
+    "install.sh",
+    "install.ps1"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ernando760/obsidian-mcp.git"
+  }
+}

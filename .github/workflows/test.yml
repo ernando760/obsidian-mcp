@@ -1,0 +1,51 @@
+name: Test
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Validate POSIX installer syntax
+        if: runner.os != 'Windows'
+        run: sh -n install.sh
+      - name: Validate PowerShell installer syntax
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD 'install.ps1'), [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) { $errors | Write-Error; exit 1 }
+      - name: Test native installers, HTTP and release lifecycle
+        env:
+          OBSIDIAN_MCP_REQUIRE_HTTP_TESTS: '1'
+        run: npm test -- --reporter=default --reporter=junit --outputFile.junit=artifacts/tests.xml
+      - run: node scripts/release.mjs
+      - run: npm run release:check
+      - name: Keep native validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-${{ matrix.os }}
+          path: |
+            artifacts/tests.xml
+            release/SHA256SUMS
+          retention-days: 7

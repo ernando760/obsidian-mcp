@@ -1,0 +1,27 @@
+name: Release
+on:
+  push:
+    tags: ['[0-9]*.[0-9]*.[0-9]*', 'v[0-9]*.[0-9]*.[0-9]*']
+permissions:
+  contents: write
+jobs:
+  validation:
+    uses: ./.github/workflows/test.yml
+  release:
+    needs: validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run release:prepare
+      - run: npm run release:check
+      - name: Publish versioned release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: gh release create "$RELEASE_TAG" release/main.js release/manifest.json release/obsidian-mcp-cli.mjs release/install.sh release/install.ps1 release/SHA256SUMS --verify-tag --generate-notes
