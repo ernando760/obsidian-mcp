@@ -176,3 +176,15 @@ Execução validada em 2026-11-09 usando somente a pasta autorizada `MCP/Projeto
 | `search_notes` | Aprovado; encontrou a nota pelo conteúdo exato. |
 
 Nenhuma anotação existente foi modificada.
+
+## Validação da instalação pública v0.1.0 no Linux
+
+Em 2026-11-09, a [release pública v0.1.0](https://github.com/ernando760/obsidian-mcp/releases/tag/v0.1.0) foi validada em um vault temporário separado, com diretórios isolados para o perfil Obsidian, o Codex, o estado do instalador e o CLI. A instalação principal não foi usada.
+
+- Os seis arquivos publicados foram baixados; os cinco artefatos conferiram com `SHA256SUMS`. O `install.sh` público foi então executado com a tag exata `v0.1.0`.
+- O CLI e o plugin foram instalados no vault temporário. A configuração automática do Codex foi verificada pelo `doctor` e pelo comando `codex mcp list` no `CODEX_HOME` isolado.
+- Uma instância real do Obsidian Desktop 1.15.0, com perfil isolado, carregou o plugin 0.1.0. O `doctor` passou em todas as verificações: artefatos, permissões, ativação, configuração Codex, rejeição HTTP sem token, autenticação e ferramentas MCP.
+- Um cliente MCP autenticado listou as cinco ferramentas e executou criação, leitura, busca e listagem de uma nota sintética. A tentativa de ler uma nota fora da pasta autorizada foi recusada.
+- O `install.sh --update` público foi executado novamente, ainda na versão `v0.1.0`. Os bytes de `data.json`, uma nota preexistente e a nota de teste permaneceram iguais, assim como suas permissões; `data.json` permaneceu com modo `0600`. Os artefatos instalados correspondiam aos arquivos baixados da release e o `doctor` passou novamente.
+
+Esta validação cobre uma reinstalação/atualização para a mesma versão, pois ainda não existe uma release posterior. Não valida a migração entre versões distintas. Os testes manuais nos aplicativos de macOS e Windows continuam pendentes.
