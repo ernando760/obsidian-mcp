@@ -1,6 +1,6 @@
 # Preparação da primeira release
 
-**Estado: CI multiplataforma e auditoria de dependências aprovados; publicação da v0.1.0 autorizada.** A versão do projeto permanece `0.1.0`.
+**Estado: [v0.1.0 publicada](https://github.com/ernando760/obsidian-mcp/releases/tag/v0.1.0); CI multiplataforma e auditoria de dependências aprovados.** A versão do projeto permanece `0.1.0`.
 Os testes manuais dos aplicativos Obsidian e Codex em macOS e Windows permanecem pendentes.
 
 ## Origem oficial
@@ -13,7 +13,7 @@ https://github.com/ernando760/obsidian-mcp.git
 
 O repositório público e a branch `main` foram confirmados pelo conector GitHub.
 O commit inicial é `f9a5f9d1cd63a812540fcf12b669f71889ec0579`, com origem,
-atribuição e conteúdo auditados. Nenhuma release foi publicada.
+atribuição e conteúdo auditados.
 
 Com essa definição:
 
@@ -61,8 +61,8 @@ PowerShell, os caminhos Windows e a substituição de arquivos foram corrigidos
 e validados pela matriz nativa. O bootstrap usa `[NullString]::Value` para passar
 um caminho de backup nulo a `File.Replace`, conforme a [API oficial do PowerShell](https://learn.microsoft.com/en-us/dotnet/api/system.management.automation.language.nullstring).
 
-Os testes usam dados sintéticos e downloads simulados. Eles não provam que uma
-release já esteja disponível no GitHub. Na desinstalação confirmada, o token da
+Os testes automatizados usam dados sintéticos e downloads simulados. Os
+artefatos da release publicada foram baixados e seus checksums conferidos. Na desinstalação confirmada, o token da
 instalação é removido junto com o plugin; notas e entradas Codex não gerenciadas
 são preservadas. O token é preservado em instalações repetidas e atualizações.
 
@@ -127,8 +127,8 @@ aprovada acima inclui as dependências atualizadas.
 
 O teste funcional registrado abaixo foi realizado em uma instalação real.
 Ainda são necessários testes manuais nos aplicativos Obsidian e Codex em macOS
-e Windows; o CI nesses sistemas não substitui essa verificação. Após a publicação,
-verificar os artefatos distribuídos e seus checksums.
+e Windows; o CI nesses sistemas não substitui essa verificação. Os artefatos
+distribuídos foram baixados e verificados com `SHA256SUMS`.
 
 ## Commits
 
