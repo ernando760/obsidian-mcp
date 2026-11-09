@@ -11,10 +11,9 @@ A origem oficial está configurada em `package.json.repository` e nos instalador
 https://github.com/ernando760/obsidian-mcp.git
 ```
 
-A conta `ernando760` foi identificada pela conexão GitHub. A criação do remoto e o
-envio inicial ainda não foram confirmados nesta sessão: o terminal não alcança a
-API do GitHub e `.git` está somente leitura. A autenticação realizada pelo usuário
-fora do sandbox não elimina essas restrições do ambiente.
+O repositório público e a branch `main` foram confirmados pelo conector GitHub.
+O commit inicial é `f9a5f9d1cd63a812540fcf12b669f71889ec0579`, com origem,
+atribuição e conteúdo auditados. Nenhuma release foi publicada.
 
 Com essa definição:
 
@@ -27,20 +26,27 @@ Com essa definição:
 
 ## Evidências e validações
 
-Nesta sessão: **144 testes aprovados e 5 ignorados**, build e verificação de tipos
-aprovados. Os cinco ignorados são três testes HTTP impedidos pelo sandbox e dois
-exclusivos de Windows. O relatório local está em `artifacts/tests.xml` (ignorado
-pelo Git). Nenhum resultado de GitHub Actions foi obtido nesta sessão.
+Validação local após as correções: **145 testes aprovados e 5 ignorados**,
+build, preparação e verificação de artefatos aprovados. Os cinco ignorados são
+três testes HTTP impedidos pelo sandbox e dois exclusivos de Windows.
+
+A [primeira execução nativa do CI](https://github.com/ernando760/obsidian-mcp/actions/runs/42668338428)
+aprovou Ubuntu e revelou duas falhas, corrigidas no código:
+
+- macOS: o shell recusava o heredoc JavaScript dentro de uma substituição de
+  comando. O heredoc agora fica em uma função, mantendo a entrada do terminal.
+- Windows: o lockfile omitia os pacotes nativos opcionais do Rollup. Foram
+  restauradas as entradas das plataformas a partir dos metadados do registro,
+  sem atualizar versões, e adicionado um teste para impedir essa regressão.
 
 | Área | Evidência disponível | Pendente |
 | --- | --- | --- |
-| Linux | Execução local de `install.sh` com downloads simulados e CLI real | Execução no runner Ubuntu do repositório oficial |
-| macOS | Casos de descoberta de vaults e diretórios; workflow nativo configurado | Execução real no runner macOS |
-| Windows | Harness para `install.ps1`, ACLs e launcher `.cmd`; workflow nativo configurado | Execução real no runner Windows |
-| Ciclo de vida | Instalação, atualização e desinstalação executadas pelo CLI real em vault temporário | Repetir nos três runners |
-| Preservação | Token e bytes de `data.json`, `allowedFolders`, notas e permissões de notas; configuração Codex não relacionada | Confirmar os resultados nativos de ACL no Windows |
-| Integridade | Downloads corrompidos recusados; artefatos e origem oficial verificados por `release:prepare` e `release:check` | Confirmar o conteúdo distribuído após a primeira publicação autorizada |
-| Aplicativos | API Obsidian e conexão MCP cobertas por testes | Smoke test manual no Obsidian Desktop e no Codex |
+| Linux | CI Ubuntu aprovado, incluindo HTTP e ciclo de instalação/atualização/desinstalação | Repetir após as correções |
+| macOS | Build nativo aprovado; falha de sintaxe identificada e corrigida | CI completo com a correção |
+| Windows | Build e parser PowerShell aprovados; lockfile corrigido | CI completo, incluindo ACLs |
+| Preservação | Token, bytes de `data.json`, `allowedFolders`, notas e permissões verificados localmente e no Ubuntu | Confirmação nativa no macOS e Windows |
+| Integridade | Downloads corrompidos recusados; hashes, versão e origem oficial verificados | Conferir os artefatos distribuídos na primeira publicação autorizada |
+| Aplicativos | API Obsidian e conexão MCP cobertas por testes | Smoke test no Obsidian Desktop e no Codex |
 
 Os testes usam dados sintéticos e downloads simulados. Eles não provam que uma
 release já esteja disponível no GitHub. Na desinstalação confirmada, o token da
@@ -73,12 +79,12 @@ de branches e referências de pull request não são tratados como versões.
 
 ## Impedimentos atuais
 
-1. `.git` somente leitura nesta sessão: não foi possível inicializar o repositório
-   local, configurar `origin` ou criar o commit inicial neste ambiente.
-2. O terminal não consegue conectar à API do GitHub, e o conector não oferece
-   criação de repositórios. Criação do remoto, push e CI nativo permanecem pendentes.
-3. Smoke test nos aplicativos reais ainda pendente. Os testes de vault e protocolo
-   não substituem o carregamento pelo Obsidian/Electron e o uso pelo Codex Desktop.
+1. Aprovar novamente a matriz do CI após as correções de macOS e Windows.
+2. Realizar smoke test nos aplicativos reais. Os testes de vault e protocolo não
+   substituem o carregamento pelo Obsidian/Electron e o uso pelo Codex Desktop.
+3. Analisar o relatório de dependências do primeiro CI: `npm ci` informou 14
+   vulnerabilidades (1 baixa, 6 moderadas, 5 altas e 2 críticas). Ainda não foi
+   determinada a aplicabilidade ao plugin, CLI ou dependências de desenvolvimento.
 
 Não considerar a primeira release aprovada até resolver os itens acima. Não criar
 uma tag de release como forma de testar o CI: use o workflow **Test**.
@@ -88,8 +94,8 @@ uma tag de release como forma de testar o CI: use o workflow **Test**.
 A política de título, corpo e trailer está registrada em [AGENTS.md](../AGENTS.md).
 A identidade `Codex <noreply@openai.com>` está documentada no
 [repositório oficial do Codex](https://github.com/openai/codex/blob/8f5d68f9d25237d0e52ebb8bdd9e7ada01d586c9/docs/config.md#commit-attribution).
-Nenhum commit do projeto foi criado nesta sessão, pois `.git` está somente leitura.
-Os commits temporários de teste seguem o mesmo formato e não são publicados.
+O commit inicial segue essa política. Os commits temporários de teste também
+seguem o formato e não são publicados.
 
 ## Inicialização e envio do código-fonte
 
@@ -97,7 +103,8 @@ A auditoria dos arquivos candidatos é salva em `artifacts/publication-audit.jso
 O snapshot `artifacts/publication-manifest.json` identifica exatamente os arquivos
 revisados por seus hashes SHA-256. Ambos ficam fora do versionamento.
 
-No terminal normal autenticado, na raiz deste projeto:
+O procedimento abaixo já foi executado pelo usuário no terminal autenticado.
+Destina-se somente à inicialização de um repositório novo:
 
 ```sh
 node scripts/setup-github.mjs
@@ -111,5 +118,6 @@ Se os arquivos tiverem mudado desde a auditoria ou existir histórico diferente,
 a operação para antes da publicação. Um envio interrompido pode ser retomado
 somente quando o commit inicial continuar idêntico ao snapshot aprovado.
 
-Depois da criação do remoto e do push, confirme o estado no GitHub e confira a
-execução da matriz do CI. Esse procedimento publica apenas o código-fonte.
+A criação do remoto e o push inicial foram confirmados no GitHub. O procedimento
+publicou apenas o código-fonte. As correções posteriores devem usar commits
+normais; não execute novamente o inicializador após acrescentar histórico.

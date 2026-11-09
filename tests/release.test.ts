@@ -48,6 +48,20 @@ describe('release source precedence', () => {
   });
 });
 describe('release preparation gates', () => {
+  it('locks native optional dependencies for every supported installer platform', async () => {
+    const lock = JSON.parse(await readFile('package-lock.json', 'utf8'));
+    for (const tool of ['rollup', 'esbuild']) {
+      const parent = lock.packages[`node_modules/${tool}`];
+      for (const [name, version] of Object.entries(parent.optionalDependencies)) {
+        if (!name.startsWith(`@${tool}/`)) continue;
+        const entry = lock.packages[`node_modules/${name}`];
+        expect(entry, `Missing native dependency: ${name}`).toBeDefined();
+        expect(entry.version).toBe(version);
+        expect(entry.optional).toBe(true);
+        expect(entry.integrity).toMatch(/^sha512-/);
+      }
+    }
+  });
   it('does not create distributable artifacts when the official source is missing', async () => {
     await writeFile(join(root, 'package.json'), JSON.stringify({ version: '0.1.0' }));
     await copyFile('manifest.json', join(root, 'manifest.json'));

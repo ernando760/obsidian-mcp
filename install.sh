@@ -47,7 +47,8 @@ done
 command -v node >/dev/null 2>&1 || { printf 'Install Node.js 22.12+ and rerun this script.\n' >&2; exit 1; }
 # This subprocess only bootstraps the CLI. The final exec below retains the
 # original terminal input, so the CLI can perform interactive vault selection.
-bootstrap=$(node --input-type=module - "$repo" "$version" "$install_dir" "$bin_dir" <<'NODE'
+bootstrap_cli() {
+node --input-type=module - "$repo" "$version" "$install_dir" "$bin_dir" <<'NODE'
 import { createHash, randomUUID } from 'node:crypto';
 import { lstat, mkdir, realpath, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, parse, resolve, sep } from 'node:path';
@@ -127,7 +128,8 @@ try {
   process.stdout.write(JSON.stringify({ path: cliPath, tag }));
 } catch (error) { console.error(`Installation failed: ${error.message}`); process.exitCode = 1; }
 NODE
-)
+}
+bootstrap=$(bootstrap_cli)
 cli_path=$(printf '%s' "$bootstrap" | node -e 'let s="";process.stdin.on("data",c=>s+=c).on("end",()=>process.stdout.write(JSON.parse(s).path))')
 release_tag=$(printf '%s' "$bootstrap" | node -e 'let s="";process.stdin.on("data",c=>s+=c).on("end",()=>process.stdout.write(JSON.parse(s).tag))')
 set -- "$command" --source remote --repo "$repo" --version "$release_tag"

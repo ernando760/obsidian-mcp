@@ -59,7 +59,7 @@ O CLI instala `main.js` e `manifest.json` em `.obsidian/plugins/obsidian-mcp/`, 
 
 Os instaladores baixam e verificam o CLI, instalam um launcher por usuário e delegam a instalação do plugin ao CLI. Não é necessário clonar o repositório, usar npm ou compilar. Não requerem `sudo` nem alteram os perfis do shell.
 
-Os exemplos abaixo serão utilizáveis após a publicação de uma release contendo os instaladores. A origem padrão é [`ernando760/obsidian-mcp`](https://github.com/ernando760/obsidian-mcp). Substitua `0.1.0` pela **tag exata** da release desejada. A origem oficial é declarada em `package.json.repository` e incorporada ao CLI e aos scripts preparados para a release. A URL configurada é `https://github.com/ernando760/obsidian-mcp.git`; a criação e disponibilidade do remoto devem ser verificadas antes da distribuição. Argumentos e `OBSIDIAN_MCP_REPOSITORY` continuam permitindo selecionar outra origem.
+Os exemplos abaixo serão utilizáveis após a publicação de uma release contendo os instaladores. A origem padrão é [`ernando760/obsidian-mcp`](https://github.com/ernando760/obsidian-mcp). Substitua `0.1.0` pela **tag exata** da release desejada. A origem oficial é declarada em `package.json.repository` e incorporada ao CLI e aos scripts preparados para a release. A URL configurada é `https://github.com/ernando760/obsidian-mcp.git`; o repositório público e o envio inicial de `main` já foram confirmados. Argumentos e `OBSIDIAN_MCP_REPOSITORY` continuam permitindo selecionar outra origem.
 
 Baixe e confira o próprio script antes de executá-lo. A verificação abaixo usa `sha256sum` no Linux ou `shasum` no macOS:
 
