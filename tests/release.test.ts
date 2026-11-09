@@ -50,7 +50,7 @@ describe('release source precedence', () => {
 describe('release preparation gates', () => {
   it('locks native optional dependencies for every supported installer platform', async () => {
     const lock = JSON.parse(await readFile('package-lock.json', 'utf8'));
-    for (const tool of ['rollup', 'esbuild']) {
+    for (const tool of ['rolldown', 'esbuild']) {
       const parent = lock.packages[`node_modules/${tool}`];
       for (const [name, version] of Object.entries(parent.optionalDependencies)) {
         if (!name.startsWith(`@${tool}/`)) continue;

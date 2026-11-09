@@ -262,6 +262,7 @@ describe('official MCP client over in-memory transport', () => {
       expect((await client.callTool({ name: 'read_note', arguments: { path: 'Private/secret.md' } })).isError).toBe(true);
       expect((await client.callTool({ name: 'create_note', arguments: { path: 'MCP/sdk.md', content: 'overwrite' } })).isError).toBe(true);
       expect((await client.callTool({ name: 'search_notes', arguments: { query: '' } })).isError).toBe(true);
+      expect((await client.callTool({ name: 'list_notes', arguments: { extra: Array(10_001).fill(1) } })).isError).toBe(true);
     } finally { await client.close(); client = undefined; await mcp.close(); }
   });
 });

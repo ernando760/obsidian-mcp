@@ -5,7 +5,7 @@ import type { Notes } from '../vault/notes';
 const path = z.string().min(1).max(1024).describe('Vault-relative Markdown path, e.g. MCP/example.md');
 const limit = z.number().int().min(1).max(200);
 export function createMcpServer(notes: Notes, version: string): McpServer {
-  const server = new McpServer({ name: 'obsidian-mcp', version });
+  const server = new McpServer({ name: 'obsidian-mcp', version }, { maxToolInputElements: 10_000 });
   const run = async (action: () => Promise<unknown>, failure = 'Operation failed. Check the authorized folder, Markdown path, note size and whether the note or parent folder exists.') => {
     try { return { content: [{ type: 'text' as const, text: JSON.stringify(await action()) }] }; }
     catch { return { isError: true, content: [{ type: 'text' as const, text: failure }] }; }

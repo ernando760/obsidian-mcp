@@ -43,7 +43,7 @@ export async function discoverVaults(rt: Runtime, installedOnly = false): Promis
     let settings: unknown;
     try { settings = await jsonOptional(path); }
     catch { rt.log(`Cadastro de vaults ilegível: ${path}. Use --vault para informar o caminho.`); continue; }
-    const parsed = z.object({ vaults: z.record(z.object({ path: z.string() }).passthrough()) }).passthrough().safeParse(settings);
+    const parsed = z.object({ vaults: z.record(z.string(), z.object({ path: z.string() }).passthrough()) }).passthrough().safeParse(settings);
     if (parsed.success) for (const { path } of Object.values(parsed.data.vaults)) candidates.push({ vault: path, configDir: '.obsidian' });
   }
   const found = new Map<string, Registration>();

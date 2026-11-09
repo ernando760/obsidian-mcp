@@ -16,16 +16,16 @@
     "release:check": "node scripts/check-release.mjs"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.30.0",
-    "smol-toml": "1.5.2",
-    "zod": "3.25.76"
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "smol-toml": "1.9.1",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@types/node": "22.19.17",
-    "esbuild": "0.27.5",
-    "obsidian": "1.12.3",
+    "esbuild": "0.28.2",
+    "obsidian": "1.14.4",
     "typescript": "5.9.3",
-    "vitest": "3.2.4"
+    "vitest": "4.1.12"
   },
   "bin": {
     "obsidian-mcp": "dist/obsidian-mcp-cli.mjs"

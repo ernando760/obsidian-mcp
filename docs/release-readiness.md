@@ -1,6 +1,6 @@
 # Preparação da primeira release
 
-**Estado: bloqueada para publicação.** A versão do projeto permanece `0.1.0`.
+**Estado: CI multiplataforma aprovado; publicação pendente de validação manual e análise de dependências.** A versão do projeto permanece `0.1.0`.
 Nenhuma release ou tag foi publicada durante esta preparação.
 
 ## Origem oficial
@@ -26,63 +26,49 @@ Com essa definição:
 
 ## Evidências e validações
 
-Validação local após as correções: **147 testes aprovados e 6 ignorados**,
-build, preparação e verificação de artefatos aprovados. Os seis ignorados são
-três testes HTTP impedidos pelo sandbox e três exclusivos de Windows.
+Validação local após as correções: **150 testes aprovados e 3 ignorados**,
+com testes HTTP executados mediante acesso ampliado, build, preparação e
+verificação de artefatos aprovados. Os três ignorados são exclusivos de Windows.
 
-A [primeira execução nativa do CI](https://github.com/ernando760/obsidian-mcp/actions/runs/42668338428)
-aprovou Ubuntu e revelou duas falhas, corrigidas no código:
+A [execução nativa aprovada do CI](https://github.com/ernando760/obsidian-mcp/actions/runs/42672293669/attempts/2)
+validou o commit `3ceb76ce4adc27f7818481a9cc12426aaa08528b` nos três sistemas:
 
-- macOS: o shell recusava o heredoc JavaScript dentro de uma substituição de
-  comando. O heredoc agora fica em uma função, mantendo a entrada do terminal.
-- Windows: o lockfile omitia os pacotes nativos opcionais do Rollup. Foram
-  restauradas as entradas das plataformas a partir dos metadados do registro,
-  sem atualizar versões, e adicionado um teste para impedir essa regressão.
+| Sistema | Aprovados | Ignorados | Resultado |
+| --- | --- | --- | --- |
+| Linux (`ubuntu-latest`) | 150 | 3 | Aprovado |
+| macOS (`macos-latest`) | 150 | 3 | Aprovado |
+| Windows (`windows-latest`) | 144 | 9 | Aprovado |
 
-A [segunda execução do CI](https://github.com/ernando760/obsidian-mcp/actions/runs/42670109846),
-no commit `7cba805a78dd2376f1406681c28873c167ee717f`, aprovou Linux e macOS:
-**148 testes aprovados e 2 exclusivos de Windows ignorados em cada sistema**.
-O Windows executou os testes, com 105 aprovados, 36 falhos e 9 ignorados.
-As falhas revelaram problemas adicionais corrigidos localmente, ainda sem
-validação nativa dessa correção:
+Os testes ignorados dependem das capacidades e do sistema operacional do runner.
+Todos os jobs aprovaram build, sintaxe do instalador nativo, testes, preparação
+e verificação dos artefatos. Os relatórios JUnit e checksums estão nos artefatos
+`validation-*` dessa execução. A primeira tentativa desse mesmo commit terminou
+com erro interno do GitHub antes de criar jobs; a segunda tentativa foi aprovada
+sem alterações no código.
 
-- Selecionar somente o primeiro executável Node encontrado no PATH.
-- Usar os módulos do próprio runtime PowerShell no bootstrap e não herdar
-  `PSModulePath` de PowerShell 7 nos subprocessos Windows PowerShell de ACLs.
-- Propagar o código de saída do instalador pelo harness de testes.
-- Comparar o caminho real do repositório e do diretório atual, incluindo aliases
-  de nomes curtos e diferenças de maiúsculas/minúsculas do Windows.
+A validação inclui:
 
-A [terceira execução do CI](https://github.com/ernando760/obsidian-mcp/actions/runs/42670863779),
-no commit `c47baade5f41d3ac112286b582289356adc6fbbc`, aprovou novamente Linux e
-macOS. No Windows, 142 testes passaram, 9 foram ignorados e restaram 2 falhas,
-ambas na substituição de um CLI existente. As verificações de ACL e os demais
-casos do CLI passaram.
+- Instalação, atualização e desinstalação com os scripts nativos e o CLI real,
+  usando downloads simulados e vaults temporários.
+- Preservação do token, bytes de `data.json`, `allowedFolders`, notas e permissões
+  durante a atualização; ACLs privadas verificadas no Windows.
+- Substituição de CLI e launcher existentes, rejeição de downloads corrompidos
+  e verificação dos hashes, versão e origem oficial dos artefatos.
+- Servidor HTTP local, autenticação e integração Codex com configurações sintéticas.
 
-O bootstrap foi corrigido para passar `[NullString]::Value` como caminho de backup
-para `File.Replace`: o PowerShell convertia `$null` em uma string vazia, que o
-.NET rejeitava como caminho inválido. O teste de atualização agora também verifica
-a substituição do launcher existente, as permissões e a ausência de arquivos
-residuais. Essa alteração ainda depende de nova execução nativa no Windows.
-A finalidade de `NullString` está documentada na [API oficial do PowerShell](https://learn.microsoft.com/en-us/dotnet/api/system.management.automation.language.nullstring).
-
-| Área | Evidência disponível | Pendente |
-| --- | --- | --- |
-| Linux | CI aprovado, incluindo HTTP e ciclo de instalação/atualização/desinstalação | Repetir após as últimas correções |
-| macOS | CI completo aprovado, incluindo o instalador POSIX | Repetir após as últimas correções |
-| Windows | 142 testes aprovados, incluindo ACLs; 2 falhas de substituição corrigidas localmente | CI completo, incluindo ACLs |
-| Preservação | Token, bytes de `data.json`, `allowedFolders`, notas e permissões verificados localmente, no Ubuntu e no macOS | Confirmação nativa no Windows |
-| Integridade | Downloads corrompidos recusados; hashes, versão e origem oficial verificados | Conferir os artefatos distribuídos na primeira publicação autorizada |
-| Aplicativos | API Obsidian e conexão MCP cobertas por testes | Smoke test no Obsidian Desktop e no Codex |
+O shell do macOS, o lockfile multiplataforma, a seleção do Node, os módulos
+PowerShell, os caminhos Windows e a substituição de arquivos foram corrigidos
+e validados pela matriz nativa. O bootstrap usa `[NullString]::Value` para passar
+um caminho de backup nulo a `File.Replace`, conforme a [API oficial do PowerShell](https://learn.microsoft.com/en-us/dotnet/api/system.management.automation.language.nullstring).
 
 Os testes usam dados sintéticos e downloads simulados. Eles não provam que uma
 release já esteja disponível no GitHub. Na desinstalação confirmada, o token da
 instalação é removido junto com o plugin; notas e entradas Codex não gerenciadas
 são preservadas. O token é preservado em instalações repetidas e atualizações.
 
-No Linux desta sessão, o sandbox proíbe bind em localhost. Os testes por socket
-são ignorados localmente, mas o CI define `OBSIDIAN_MCP_REQUIRE_HTTP_TESTS=1` e
-falha se não puder executá-los. Testes exclusivos de Windows só executam nesse
+O sandbox padrão proíbe bind em localhost. Os testes HTTP foram executados com
+permissão ampliada e `OBSIDIAN_MCP_REQUIRE_HTTP_TESTS=1`; o CI também usa essa
+variável e falha se não puder executá-los. Testes exclusivos de Windows só executam nesse
 sistema. O workflow guarda o relatório JUnit por sistema como evidência.
 
 ## Executar a validação sem publicar
@@ -104,14 +90,44 @@ reutiliza a matriz e só prossegue se todas as verificações passarem.
 A geração de artefatos valida tags somente quando `GITHUB_REF_TYPE=tag`; nomes
 de branches e referências de pull request não são tratados como versões.
 
+## Auditoria de dependências
+
+Em 9 de novembro de 2026, `npm audit` identificou **14 pacotes** sinalizados:
+2 críticos, 5 altos, 6 moderados e 1 baixo. A contagem inclui dependências
+intermediárias; não representa 14 vulnerabilidades independentes. Após as
+atualizações, `npm audit` e `npm ci` retornaram **0 vulnerabilidades**.
+
+| Pacote sinalizado | Severidade | Uso e impacto neste projeto | Correção |
+| --- | --- | --- | --- |
+| `@modelcontextprotocol/sdk` | Alta | Produção: SDK no plugin e no CLI. Entradas HTTP excessivamente complexas podem esgotar recursos; o servidor já exige token e limita o corpo a 2 MiB. OAuth e tarefas experimentais dos avisos não são usados. | 1.32.2 e `maxToolInputElements=10000` |
+| `zod` | Alta | Produção: validação de entradas no servidor. Coleções excessivas podem esgotar memória. | 4.6.7; limite de elementos do SDK ativado |
+| `smol-toml` | Alta | Produção: o CLI lê `config.toml` local; TOML malformado poderia bloquear ou atrasar o processo. | 1.9.1 |
+| `@hono/node-server` | Moderada | Transitiva de produção: avisos atingem serviço de arquivos estáticos, não usado pelo servidor do plugin. | 2.1.6 |
+| `hono` | Moderada | Transitiva de produção: avisos envolvem HTML, formulários, geração estática e rotas não utilizadas pelo plugin. | 4.13.17 |
+| `body-parser` | Alta | Transitiva de produção: aviso afeta corpos comprimidos processados pelo Express; o plugin usa `node:http` e JSON próprio. | 2.4.0 |
+| `ip-address` | Moderada | Transitiva de produção: entrada IPv6 especialmente longa pode consumir CPU; o plugin não usa o limitador Express que a depende. | 10.7.6 |
+| `vitest` | Crítica | Desenvolvimento: risco no servidor UI; o projeto usa `vitest run` sem UI e não distribui o Vitest. | 4.1.12 |
+| `tinypool` | Crítica | Desenvolvimento: execução de código exige poluição de protótipo prévia; não é distribuído. | Removido da árvore atual |
+| `@vitest/mocker` | Moderada | Desenvolvimento: riscos no servidor de mocks/UI, sem uso desses modos pelo projeto. | Atualizado com Vitest |
+| `vite` | Alta | Desenvolvimento: avisos afetam principalmente servidor de desenvolvimento e editor; não é distribuído. | 8.3.7 |
+| `esbuild` | Baixa | Desenvolvimento: aviso afeta servidor de desenvolvimento no Windows; o projeto usa build/watch, sem `serve`. | 0.28.2 |
+| `moment` | Moderada | Desenvolvimento: transitiva dos tipos/API `obsidian`; o módulo Obsidian é externo ao bundle e fornecido pelo aplicativo. | 2.31.0 |
+| `obsidian` | Moderada | Desenvolvimento: sinalizado por depender de `moment`; não é incorporado ao plugin. | 1.14.4 |
+
+Os detalhes constam dos avisos oficiais de [SDK MCP](https://github.com/advisories/GHSA-46jr-4wx8-v453), [Zod](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5), [smol-toml](https://github.com/advisories/GHSA-7w5x-hrqm-74c2) e [Tinypool](https://github.com/advisories/GHSA-85c8-ppgw-ccpr).
+
+As versões principais de Zod e Vitest e a atualização de esbuild foram necessárias
+para corrigir avisos sem solução na árvore anterior. O schema de descoberta de
+vaults e a configuração de testes foram adaptados; os testes de integração MCP
+continuam exercitando as ferramentas. O lockfile foi regenerado com npm 11 após
+uma falha do resolvedor npm 10; `npm ci` com npm 10 foi validado. A matriz nativa
+aprovada acima corresponde ao commit anterior às atualizações e deve ser repetida.
+
 ## Impedimentos atuais
 
-1. Aprovar novamente a matriz do CI após as últimas correções do Windows.
-2. Realizar smoke test nos aplicativos reais. Os testes de vault e protocolo não
+1. Realizar smoke test nos aplicativos reais. Os testes de vault e protocolo não
    substituem o carregamento pelo Obsidian/Electron e o uso pelo Codex Desktop.
-3. Analisar o relatório de dependências do primeiro CI: `npm ci` informou 14
-   vulnerabilidades (1 baixa, 6 moderadas, 5 altas e 2 críticas). Ainda não foi
-   determinada a aplicabilidade ao plugin, CLI ou dependências de desenvolvimento.
+2. Repetir o CI nativo nos três sistemas após atualizar as dependências.
 
 Não considerar a primeira release aprovada até resolver os itens acima. Não criar
 uma tag de release como forma de testar o CI: use o workflow **Test**.
