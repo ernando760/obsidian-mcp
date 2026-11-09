@@ -53,11 +53,24 @@ validação nativa dessa correção:
 - Comparar o caminho real do repositório e do diretório atual, incluindo aliases
   de nomes curtos e diferenças de maiúsculas/minúsculas do Windows.
 
+A [terceira execução do CI](https://github.com/ernando760/obsidian-mcp/actions/runs/42670863779),
+no commit `c47baade5f41d3ac112286b582289356adc6fbbc`, aprovou novamente Linux e
+macOS. No Windows, 142 testes passaram, 9 foram ignorados e restaram 2 falhas,
+ambas na substituição de um CLI existente. As verificações de ACL e os demais
+casos do CLI passaram.
+
+O bootstrap foi corrigido para passar `[NullString]::Value` como caminho de backup
+para `File.Replace`: o PowerShell convertia `$null` em uma string vazia, que o
+.NET rejeitava como caminho inválido. O teste de atualização agora também verifica
+a substituição do launcher existente, as permissões e a ausência de arquivos
+residuais. Essa alteração ainda depende de nova execução nativa no Windows.
+A finalidade de `NullString` está documentada na [API oficial do PowerShell](https://learn.microsoft.com/en-us/dotnet/api/system.management.automation.language.nullstring).
+
 | Área | Evidência disponível | Pendente |
 | --- | --- | --- |
 | Linux | CI aprovado, incluindo HTTP e ciclo de instalação/atualização/desinstalação | Repetir após as últimas correções |
 | macOS | CI completo aprovado, incluindo o instalador POSIX | Repetir após as últimas correções |
-| Windows | Build e parser PowerShell aprovados; falhas de execução identificadas e corrigidas localmente | CI completo, incluindo ACLs |
+| Windows | 142 testes aprovados, incluindo ACLs; 2 falhas de substituição corrigidas localmente | CI completo, incluindo ACLs |
 | Preservação | Token, bytes de `data.json`, `allowedFolders`, notas e permissões verificados localmente, no Ubuntu e no macOS | Confirmação nativa no Windows |
 | Integridade | Downloads corrompidos recusados; hashes, versão e origem oficial verificados | Conferir os artefatos distribuídos na primeira publicação autorizada |
 | Aplicativos | API Obsidian e conexão MCP cobertas por testes | Smoke test no Obsidian Desktop e no Codex |

@@ -112,7 +112,9 @@ try {
         try {
             [IO.File]::Copy($Source, $temporary, $false)
             Set-PrivateFile $temporary
-            if ([IO.File]::Exists($Destination)) { [IO.File]::Replace($temporary, $Destination, $null) }
+            # PowerShell coerces $null to an empty string for this .NET string
+            # parameter. NullString passes a real null backup path instead.
+            if ([IO.File]::Exists($Destination)) { [IO.File]::Replace($temporary, $Destination, [NullString]::Value) }
             else { [IO.File]::Move($temporary, $Destination) }
             Set-PrivateFile $Destination
         } finally {

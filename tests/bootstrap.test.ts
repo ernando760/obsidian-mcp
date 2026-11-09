@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { mkdtemp, mkdir, readFile, writeFile, rm, access } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, writeFile, rm, access, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -110,8 +110,15 @@ describe('native bootstrap installer (mock GitHub release, real Node process)', 
   it('can replace a previous CLI after verifying the new download', async () => {
     await mkdir(installDir, { recursive: true });
     await writeFile(join(installDir, 'obsidian-mcp-cli.mjs'), 'old CLI');
+    const launcher = windows ? join(installDir, 'obsidian-mcp.cmd') : join(binDir, 'obsidian-mcp');
+    if (!windows) await mkdir(binDir, { recursive: true });
+    await writeFile(launcher, 'old launcher');
     await run({ update: true });
     expect(await readFile(join(installDir, 'obsidian-mcp-cli.mjs'), 'utf8')).toBe(fixture.responses[`${base}obsidian-mcp-cli.mjs`]);
+    expect(await readFile(launcher, 'utf8')).toContain('obsidian-mcp-cli.mjs');
+    expect((await readdir(installDir)).sort()).toEqual(windows ? ['obsidian-mcp-cli.mjs', 'obsidian-mcp.cmd'] : ['obsidian-mcp-cli.mjs']);
+    expect(await credentialsProtected(join(installDir, 'obsidian-mcp-cli.mjs'))).toBe(true);
+    if (windows) expect(await credentialsProtected(launcher)).toBe(true);
     expect(JSON.parse(await readFile(capture, 'utf8'))[0]).toBe('update');
   });
   it('pins an explicit release and delegates update to the CLI', async () => {
