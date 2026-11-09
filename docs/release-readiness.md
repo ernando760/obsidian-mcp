@@ -30,8 +30,8 @@ Validação local após as correções: **150 testes aprovados e 3 ignorados**,
 com testes HTTP executados mediante acesso ampliado, build, preparação e
 verificação de artefatos aprovados. Os três ignorados são exclusivos de Windows.
 
-A [execução nativa aprovada do CI](https://github.com/ernando760/obsidian-mcp/actions/runs/42672293669/attempts/2)
-validou o commit `3ceb76ce4adc27f7818481a9cc12426aaa08528b` nos três sistemas:
+A [execução nativa aprovada do CI](https://github.com/ernando760/obsidian-mcp/actions/runs/42675790640)
+validou o commit `651d3f79ee11da41186d6184787e97cbb5afa768` nos três sistemas:
 
 | Sistema | Aprovados | Ignorados | Resultado |
 | --- | --- | --- | --- |
@@ -42,9 +42,9 @@ validou o commit `3ceb76ce4adc27f7818481a9cc12426aaa08528b` nos três sistemas:
 Os testes ignorados dependem das capacidades e do sistema operacional do runner.
 Todos os jobs aprovaram build, sintaxe do instalador nativo, testes, preparação
 e verificação dos artefatos. Os relatórios JUnit e checksums estão nos artefatos
-`validation-*` dessa execução. A primeira tentativa desse mesmo commit terminou
-com erro interno do GitHub antes de criar jobs; a segunda tentativa foi aprovada
-sem alterações no código.
+`validation-*` dessa execução. A execução anterior do projeto também havia
+passado nos três sistemas; seus resultados não substituem a validação das
+dependências atualizadas.
 
 A validação inclui:
 
@@ -121,15 +121,15 @@ para corrigir avisos sem solução na árvore anterior. O schema de descoberta d
 vaults e a configuração de testes foram adaptados; os testes de integração MCP
 continuam exercitando as ferramentas. O lockfile foi regenerado com npm 11 após
 uma falha do resolvedor npm 10; `npm ci` com npm 10 foi validado. A matriz nativa
-aprovada acima corresponde ao commit anterior às atualizações e deve ser repetida.
+aprovada acima inclui as dependências atualizadas.
 
 ## Impedimentos atuais
 
-1. Realizar smoke test nos aplicativos reais. Os testes de vault e protocolo não
-   substituem o carregamento pelo Obsidian/Electron e o uso pelo Codex Desktop.
-2. Repetir o CI nativo nos três sistemas após atualizar as dependências.
+Realizar smoke test nos aplicativos reais. Os testes de vault e protocolo não
+substituem o carregamento pelo Obsidian/Electron e o uso pelo Codex Desktop.
+Após uma publicação autorizada, verificar os artefatos distribuídos.
 
-Não considerar a primeira release aprovada até resolver os itens acima. Não criar
+Não considerar a primeira release aprovada antes do smoke test. Não criar
 uma tag de release como forma de testar o CI: use o workflow **Test**.
 
 ## Commits
