@@ -6,7 +6,7 @@ import { pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-const { verifyIndex, verifyCommit, sensitiveContent } = await import(pathToFileURL(resolve('scripts/setup-github.mjs')).href);
+const { verifyIndex, verifyCommit, verifyRepositoryRoot, sensitiveContent } = await import(pathToFileURL(resolve('scripts/setup-github.mjs')).href);
 const execute = promisify(execFile);
 let root: string;
 const git = async (args: string[]) => (await execute('git', args, { cwd: root })).stdout;
@@ -61,6 +61,12 @@ describe('initial-publication guard', () => {
     await execute(process.execPath, [resolve('scripts/setup-github.mjs'), '--check'], { cwd: root });
     await expect(git(['rev-parse', '--verify', 'HEAD'])).rejects.toThrow();
     expect(await git(['remote'])).toBe('');
+  });
+  it('still rejects a parent repository when the working directory is nested', async () => {
+    const nested = join(root, 'nested');
+    await mkdir(nested);
+    await expect(verifyRepositoryRoot(root, root)).resolves.toBeUndefined();
+    await expect(verifyRepositoryRoot(root, nested)).rejects.toThrow('parent repository');
   });
   it('permits verified noreply attribution and SSH examples', () => {
     expect(sensitiveContent('Co-authored-by: Codex <noreply@openai.com>')).toBeUndefined();

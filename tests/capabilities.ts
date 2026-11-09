@@ -1,6 +1,7 @@
 import { mkdtemp, writeFile, symlink, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { windowsPowerShellEnv } from '../cli/platform';
 export const windows = process.platform === 'win32';
 const root = await mkdtemp(join(tmpdir(), 'obsidian-mcp-capabilities-'));
 export const fileSymlinks = await (async () => {
@@ -22,6 +23,6 @@ export async function permissionSnapshot(path: string): Promise<string> {
   const { execFile } = await import('node:child_process');
   const { promisify } = await import('node:util');
   const code = `$ErrorActionPreference='Stop'; (Get-Acl -LiteralPath $env:OBSIDIAN_MCP_PERMISSION_SNAPSHOT).Sddl`;
-  const { stdout } = await promisify(execFile)('powershell.exe', ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(code, 'utf16le').toString('base64')], { env: { ...process.env, OBSIDIAN_MCP_PERMISSION_SNAPSHOT: path }, timeout: 15000 });
+  const { stdout } = await promisify(execFile)('powershell.exe', ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(code, 'utf16le').toString('base64')], { env: { ...windowsPowerShellEnv(process.env), OBSIDIAN_MCP_PERMISSION_SNAPSHOT: path }, timeout: 15000 });
   return stdout.trim();
 }

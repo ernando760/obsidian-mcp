@@ -35,10 +35,14 @@ No administrator privileges or global execution-policy changes are required.
 $tempDir = $null
 try {
     if ($env:OS -ne 'Windows_NT') { throw 'Use install.sh on Linux/macOS.' }
+    # Use modules belonging to this PowerShell runtime, even when launched
+    # from a terminal whose PSModulePath points at another PowerShell version.
+    Import-Module (Join-Path $PSHOME 'Modules/Microsoft.PowerShell.Utility') -ErrorAction Stop
+    Import-Module (Join-Path $PSHOME 'Modules/Microsoft.PowerShell.Security') -ErrorAction Stop
     if ($Repository -notmatch '^[A-Za-z0-9_-]+/[A-Za-z0-9_.-]+$' -or $Repository -match '/(?:\.|\.\.)$') { throw 'Provide -Repo owner/repository (the official release repository).' }
     if ($Version -and $Version -notmatch '^v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$') { throw 'Provide an exact stable -Version tag.' }
     if ($null -ne $Port -and ($Port -lt 1024 -or $Port -gt 65535)) { throw 'Port must be between 1024 and 65535.' }
-    $node = (Get-Command node -CommandType Application -ErrorAction Stop).Source
+    $node = (Get-Command node -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
     $nodeVersion = & $node -p 'process.versions.node'
     if ($LASTEXITCODE -ne 0 -or [version]$nodeVersion -lt [version]'22.12.0') { throw 'Install Node.js 22.12+ and rerun this script.' }
     if (-not $InstallDir) {

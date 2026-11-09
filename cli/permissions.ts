@@ -1,5 +1,6 @@
 import { execFile } from 'node:child_process';
 import { chmod, stat } from 'node:fs/promises';
+import { windowsPowerShellEnv } from './platform';
 
 // Pass paths through the environment rather than interpolating PowerShell code.
 async function windowsPermissions(path: string, checking: boolean): Promise<boolean> {
@@ -25,7 +26,7 @@ if ($ok -and $ownerAccess) { Write-Output 'true' } else { Write-Output 'false' }
   const code = `$ErrorActionPreference = 'Stop'\n${checking ? check : protect}`;
   return new Promise((resolve, reject) => {
     execFile('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(code, 'utf16le').toString('base64')], {
-      env: { ...process.env, OBSIDIAN_MCP_PERMISSION_PATH: path }, timeout: 15000, maxBuffer: 16384, windowsHide: true,
+      env: { ...windowsPowerShellEnv(process.env), OBSIDIAN_MCP_PERMISSION_PATH: path }, timeout: 15000, maxBuffer: 16384, windowsHide: true,
     }, (error, stdout) => {
       if (error) reject(new Error('Não foi possível verificar/aplicar a ACL privada. Use um volume Windows com suporte a ACL e Windows PowerShell.'));
       else resolve(stdout.trim().toLowerCase() === 'true');

@@ -40,7 +40,7 @@ beforeEach(async () => {
   env = { ...process.env, NODE_OPTIONS: `--import=${pathToFileURL(preload).href}`, OBSIDIAN_MCP_TEST_CAPTURE: capture, OBSIDIAN_MCP_TEST_FIXTURE: join(root, 'fixture.json'), OBSIDIAN_MCP_TEST_REQUESTS: join(root, 'requests.txt') };
 });
 afterEach(async () => { await rm(root, { recursive: true, force: true }); });
-async function run(options: { update?: boolean; version?: boolean; exit?: number; omitVault?: boolean; automatic?: boolean; port?: number; source?: 'argument' | 'environment' | 'default' } = {}) {
+async function run(options: { update?: boolean; version?: boolean; exit?: number; omitVault?: boolean; automatic?: boolean; port?: number; duplicateNode?: boolean; source?: 'argument' | 'environment' | 'default' } = {}) {
   await writeFile(env.OBSIDIAN_MCP_TEST_FIXTURE!, JSON.stringify(fixture));
   const vault = join(root, 'Meu vault com espaços');
   const source = options.source ?? 'argument';
@@ -58,6 +58,7 @@ async function run(options: { update?: boolean; version?: boolean; exit?: number
   // PowerShell scope. Native ACLs and the Node argv boundary still execute.
   const harness = join(root, 'harness.ps1');
   await writeFile(harness, `
+    ${options.duplicateNode ? `function Get-Command { @([pscustomobject]@{ Source=$env:OBSIDIAN_MCP_TEST_NODE }, [pscustomobject]@{ Source='C:\\missing\\node.exe' }) }` : ''}
     function Invoke-WebRequest {
       param([string]$Uri, [string]$OutFile, [switch]$PassThru, [switch]$UseBasicParsing, [int]$MaximumRedirection, [int]$TimeoutSec, $Headers)
       $fixture = Get-Content -LiteralPath $env:OBSIDIAN_MCP_TEST_FIXTURE -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -74,11 +75,16 @@ async function run(options: { update?: boolean; version?: boolean; exit?: number
     ${options.version ? `$arguments.Version='${tag}'` : ''}
     ${options.update ? '$arguments.Update=$true' : ''}
     & $env:OBSIDIAN_MCP_TEST_SCRIPT @arguments
+    exit $LASTEXITCODE
   `);
-  return execute('powershell.exe', ['-NoProfile', '-NonInteractive', '-File', harness], { env: { ...childEnv, OBSIDIAN_MCP_TEST_INSTALL: installDir, OBSIDIAN_MCP_TEST_VAULT: vault, OBSIDIAN_MCP_TEST_SCRIPT: bootstrapScript }, timeout: 90000 });
+  return execute('powershell.exe', ['-NoProfile', '-NonInteractive', '-File', harness], { env: { ...childEnv, OBSIDIAN_MCP_TEST_NODE: process.execPath, OBSIDIAN_MCP_TEST_INSTALL: installDir, OBSIDIAN_MCP_TEST_VAULT: vault, OBSIDIAN_MCP_TEST_SCRIPT: bootstrapScript }, timeout: 90000 });
 }
 
 describe('native bootstrap installer (mock GitHub release, real Node process)', () => {
+  it.skipIf(!windows)('selects the first Node executable when multiple installations are on PATH', async () => {
+    await run({ duplicateNode: true });
+    expect(JSON.parse(await readFile(capture, 'utf8'))[0]).toBe('install');
+  });
   it('verifies downloads, installs a standalone CLI and forwards paths/manual settings intact', async () => {
     await run();
     expect(JSON.parse(await readFile(capture, 'utf8'))).toEqual(['install', '--source', 'remote', '--repo', repo, '--version', tag,

@@ -2,6 +2,11 @@ import { join } from 'node:path';
 import type { Runtime } from './runtime';
 
 export const platform = (rt: Pick<Runtime, 'platform'>) => rt.platform ?? process.platform;
+// Let Windows PowerShell build its own module path instead of inheriting
+// incompatible PowerShell 7 modules from the calling terminal or CI runner.
+export function windowsPowerShellEnv(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  return Object.fromEntries(Object.entries(env).filter(([key]) => key.toLowerCase() !== 'psmodulepath'));
+}
 export function obsidianRegistries(rt: Runtime): string[] {
   if (platform(rt) === 'darwin') return [join(rt.home, 'Library/Application Support/obsidian/obsidian.json')];
   if (platform(rt) === 'win32') return [join(rt.env.APPDATA || join(rt.home, 'AppData/Roaming'), 'obsidian/obsidian.json')];

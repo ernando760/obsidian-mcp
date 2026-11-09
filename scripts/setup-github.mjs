@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, realpath } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
@@ -51,10 +51,14 @@ export async function verifyCommit(manifest, git = args => command('git', args))
   }).join('');
   return verifyIndex(manifest, args => args[0] === 'ls-files' ? Promise.resolve(tree) : git(args));
 }
+export async function verifyRepositoryRoot(top, cwd = process.cwd()) {
+  const canonical = path => realpath(path).then(value => process.platform === 'win32' ? value.toLowerCase() : value);
+  if (await canonical(top) !== await canonical(cwd)) throw new Error('Refusing to operate on a parent repository.');
+}
 export async function setup() {
   const manifest = JSON.parse(await readFile('artifacts/publication-manifest.json', 'utf8'));
   const top = (await command('git', ['rev-parse', '--show-toplevel']).catch(() => '')).trim();
-  if (top && resolve(top) !== process.cwd()) throw new Error('Refusing to operate on a parent repository.');
+  if (top) await verifyRepositoryRoot(top);
   const history = (await command('git', ['rev-list', '--all', '--count']).catch(() => '0')).trim();
   if (!['0', '1'].includes(history)) throw new Error('Existing history requires a separate audit. Nothing was pushed.');
   if (process.argv.includes('--check')) {

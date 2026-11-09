@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { promisify } from 'node:util';
 import { execFile } from 'node:child_process';
 import { runtime, stateDir } from '../cli/runtime';
-import { obsidianRegistries, codexCommand } from '../cli/platform';
+import { obsidianRegistries, codexCommand, windowsPowerShellEnv } from '../cli/platform';
 import { discoverVaults, registry } from '../cli/vaults';
 import { json } from '../cli/files';
 import { protectCredentials, credentialsProtected } from '../cli/permissions';
@@ -65,6 +65,11 @@ describe('Codex process invocation', () => {
   });
 });
 describe('native credential protection', () => {
+  it('isolates Windows PowerShell module discovery without changing the caller environment', () => {
+    const env = { PSModulePath: 'PowerShell7/Modules', psmodulepath: 'other/modules', PATH: 'node/bin', OTHER: 'kept' };
+    expect(windowsPowerShellEnv(env)).toEqual({ PATH: 'node/bin', OTHER: 'kept' });
+    expect(env.PSModulePath).toBe('PowerShell7/Modules');
+  });
   it('protects a credential file without rewriting its bytes', async () => {
     const file = join(root, 'credenciais com espaços.json');
     const data = '{"token":"local-test"}\r\n';
@@ -77,7 +82,7 @@ describe('native credential protection', () => {
     const file = join(root, 'credentials.json');
     await writeFile(file, '{}'); await protectCredentials(file);
     const script = `$ErrorActionPreference='Stop'; $acl=Get-Acl -LiteralPath $env:OBSIDIAN_MCP_ACL_TEST; $everyone=[System.Security.Principal.SecurityIdentifier]::new('S-1-1-0'); $acl.AddAccessRule([System.Security.AccessControl.FileSystemAccessRule]::new($everyone,'Read','Allow')); Set-Acl -LiteralPath $env:OBSIDIAN_MCP_ACL_TEST -AclObject $acl`;
-    await promisify(execFile)('powershell.exe', ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(script, 'utf16le').toString('base64')], { env: { ...process.env, OBSIDIAN_MCP_ACL_TEST: file } });
+    await promisify(execFile)('powershell.exe', ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(script, 'utf16le').toString('base64')], { env: { ...windowsPowerShellEnv(process.env), OBSIDIAN_MCP_ACL_TEST: file } });
     expect(await credentialsProtected(file)).toBe(false);
     await protectCredentials(file);
     expect(await credentialsProtected(file)).toBe(true);

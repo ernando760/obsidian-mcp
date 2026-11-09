@@ -26,9 +26,9 @@ Com essa definição:
 
 ## Evidências e validações
 
-Validação local após as correções: **145 testes aprovados e 5 ignorados**,
-build, preparação e verificação de artefatos aprovados. Os cinco ignorados são
-três testes HTTP impedidos pelo sandbox e dois exclusivos de Windows.
+Validação local após as correções: **147 testes aprovados e 6 ignorados**,
+build, preparação e verificação de artefatos aprovados. Os seis ignorados são
+três testes HTTP impedidos pelo sandbox e três exclusivos de Windows.
 
 A [primeira execução nativa do CI](https://github.com/ernando760/obsidian-mcp/actions/runs/42668338428)
 aprovou Ubuntu e revelou duas falhas, corrigidas no código:
@@ -39,12 +39,26 @@ aprovou Ubuntu e revelou duas falhas, corrigidas no código:
   restauradas as entradas das plataformas a partir dos metadados do registro,
   sem atualizar versões, e adicionado um teste para impedir essa regressão.
 
+A [segunda execução do CI](https://github.com/ernando760/obsidian-mcp/actions/runs/42670109846),
+no commit `7cba805a78dd2376f1406681c28873c167ee717f`, aprovou Linux e macOS:
+**148 testes aprovados e 2 exclusivos de Windows ignorados em cada sistema**.
+O Windows executou os testes, com 105 aprovados, 36 falhos e 9 ignorados.
+As falhas revelaram problemas adicionais corrigidos localmente, ainda sem
+validação nativa dessa correção:
+
+- Selecionar somente o primeiro executável Node encontrado no PATH.
+- Usar os módulos do próprio runtime PowerShell no bootstrap e não herdar
+  `PSModulePath` de PowerShell 7 nos subprocessos Windows PowerShell de ACLs.
+- Propagar o código de saída do instalador pelo harness de testes.
+- Comparar o caminho real do repositório e do diretório atual, incluindo aliases
+  de nomes curtos e diferenças de maiúsculas/minúsculas do Windows.
+
 | Área | Evidência disponível | Pendente |
 | --- | --- | --- |
-| Linux | CI Ubuntu aprovado, incluindo HTTP e ciclo de instalação/atualização/desinstalação | Repetir após as correções |
-| macOS | Build nativo aprovado; falha de sintaxe identificada e corrigida | CI completo com a correção |
-| Windows | Build e parser PowerShell aprovados; lockfile corrigido | CI completo, incluindo ACLs |
-| Preservação | Token, bytes de `data.json`, `allowedFolders`, notas e permissões verificados localmente e no Ubuntu | Confirmação nativa no macOS e Windows |
+| Linux | CI aprovado, incluindo HTTP e ciclo de instalação/atualização/desinstalação | Repetir após as últimas correções |
+| macOS | CI completo aprovado, incluindo o instalador POSIX | Repetir após as últimas correções |
+| Windows | Build e parser PowerShell aprovados; falhas de execução identificadas e corrigidas localmente | CI completo, incluindo ACLs |
+| Preservação | Token, bytes de `data.json`, `allowedFolders`, notas e permissões verificados localmente, no Ubuntu e no macOS | Confirmação nativa no Windows |
 | Integridade | Downloads corrompidos recusados; hashes, versão e origem oficial verificados | Conferir os artefatos distribuídos na primeira publicação autorizada |
 | Aplicativos | API Obsidian e conexão MCP cobertas por testes | Smoke test no Obsidian Desktop e no Codex |
 
@@ -79,7 +93,7 @@ de branches e referências de pull request não são tratados como versões.
 
 ## Impedimentos atuais
 
-1. Aprovar novamente a matriz do CI após as correções de macOS e Windows.
+1. Aprovar novamente a matriz do CI após as últimas correções do Windows.
 2. Realizar smoke test nos aplicativos reais. Os testes de vault e protocolo não
    substituem o carregamento pelo Obsidian/Electron e o uso pelo Codex Desktop.
 3. Analisar o relatório de dependências do primeiro CI: `npm ci` informou 14
